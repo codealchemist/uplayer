@@ -82,7 +82,7 @@ module.exports = class Player {
     }
 
     if (!this.loaded) {
-      console.log('Waiting for buffer to load...')
+      this.log('Waiting for buffer to load...')
       this.fetcher.then(() => this.play())
       return
     }
