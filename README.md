@@ -62,6 +62,15 @@ Use the method `on(eventName, callback)` to set event listeners on the WebAudio 
 
 For more info about events check [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
 
+## Key bindings
+
+- `z`: Stop.
+- `x`: Play.
+- `c`: Pause.
+- `l`: Toggle looping.
+- `ArrowRight`: Forward.
+- `ArrowLeft`: Rewind.
+
 ## Using with file reader
 
 Since `src` can be an `ArrayBuffer` you can easily drop audio files in the browser
