@@ -22,5 +22,8 @@
   "homepage": "https://github.com/codealchemist/uplayer#readme",
   "dev-dependencies": {
     "standard-focus": "^1.1.2"
+  },
+  "devDependencies": {
+    "standard-focus": "^1.1.2"
   }
 }

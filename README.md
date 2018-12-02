@@ -20,6 +20,7 @@ It also provides keyboard bindings that can be enabled if required.
 const Player = require('uplayer')
 const player = new Player('http://server/some.mp3')
 player
+  .on('ended', () => console.log('Ended.'))
   .load()
   .play()
 ```
@@ -42,6 +43,7 @@ Constructor params: `uplayer(src, debug)`:
 - `useKeyboard(selector)`: Enables keyboard bindings adding listeners to passed selector. Uses `body` by default.
 - `loop(loopState)`: Enables / disables looping based on `loopState`.
 - `toggleLoop()`: Toggles looping.
+- `on(eventName, callback)`: Adds event listener on WebAudio source.
 
 **µ-player** provides the following properties:
 
@@ -50,5 +52,11 @@ Constructor params: `uplayer(src, debug)`:
 - `loaded`: True when audio file was loaded, false when not.
 - `buffer`: WebAudio buffer data.
 - `source`: WebAudio source.
+
+## Events
+
+Use the method `on(eventName, callback)` to set event listeners on the WebAudio source.
+
+For more info about events check [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
 
 Have fun!

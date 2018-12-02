@@ -8,6 +8,13 @@ module.exports = class Player {
     this.debug = debug
     this.startedAt = 0
     this.offset = 0
+
+    this.initSource()
+  }
+
+  initSource () {
+    this.source = this.context.createBufferSource()
+    this.source.connect(this.context.destination)
   }
 
   load () {
@@ -33,16 +40,14 @@ module.exports = class Player {
       return
     }
 
-    if (this.source) return
-
     if (!this.loaded) {
       console.log('Waiting for buffer to load...')
       this.fetcher.then(() => this.play())
       return
     }
 
-    this.source = this.context.createBufferSource()
-    this.source.connect(this.context.destination)
+    if (this.source.buffer) return
+
     this.source.buffer = this.buffer
     this.source.loopEnd = this.buffer.duration
     this.startedAt = this.context.currentTime
@@ -60,6 +65,8 @@ module.exports = class Player {
     this.source.disconnect()
     this.source.stop()
     this.source = null
+
+    this.initSource()
   }
 
   stop () {
@@ -115,6 +122,11 @@ module.exports = class Player {
       const method = keyMap[key]
       if (method) method()
     })
+    return this
+  }
+
+  on (eventName, callback) {
+    this.source.addEventListener(eventName, callback)
     return this
   }
 
