@@ -1,11 +1,11 @@
 module.exports = class Player {
-  constructor (src, debug = false) {
+  constructor (src, debugState = false) {
     this.src = src
     this.context = new (window.AudioContext || window.webkitAudioContext)()
     this.loaded = false
     this.buffer = null
     this.source = null
-    this.debug = debug
+    this.debugState = debugState
     this.startedAt = 0
     this.offset = 0
     this.loopState = false
@@ -28,10 +28,40 @@ module.exports = class Player {
     })
   }
 
-  load () {
-    this.log('Loading', this.src)
+  clearSource () {
+    if (!this.source) return
+    if (this.playing) this.source.stop()
+    this.source.disconnect()
+    this.initSource()
+  }
+
+  stop () {
+    if (!this.playing) return
+    this.clearSource()
+    this.startedAt = 0
+    this.offset = 0
+    this.playing = false
+    this.log('Stopped.')
+  }
+
+  load (src) {
+    src = src || this.src
+    this.log('Loading', src)
+    if (this.loaded) {
+      this.clearSource()
+      this.loaded = false
+    }
+
+    if (typeof src !== 'string') {
+      this.fetcher = this.context.decodeAudioData(src).then(audioBuffer => {
+        this.loaded = true
+        this.buffer = audioBuffer
+      })
+      return this
+    }
+
     this.fetcher = window
-      .fetch(this.src, { method: 'GET', mode: 'no-cors' })
+      .fetch(src, { method: 'GET', mode: 'no-cors' })
       .then(response => response.arrayBuffer())
       .then(arrayBuffer => this.context.decodeAudioData(arrayBuffer))
       .then(audioBuffer => {
@@ -71,23 +101,8 @@ module.exports = class Player {
 
   pause () {
     this.context.suspend()
-    this.log('Paused.')
-  }
-
-  clearSource () {
-    if (!this.source) return
-    this.source.disconnect()
-    this.source.stop()
-    this.initSource()
-  }
-
-  stop () {
-    if (!this.playing) return
-    this.clearSource()
-    this.startedAt = 0
-    this.offset = 0
     this.playing = false
-    this.log('Stopped.')
+    this.log('Paused.')
   }
 
   loop (loopState) {
@@ -150,8 +165,12 @@ module.exports = class Player {
     return this
   }
 
+  debug (debugState) {
+    this.debugState = debugState
+  }
+
   log () {
-    if (!this.debug) return
+    if (!this.debugState) return
     console.log('Player:', ...arguments)
   }
 }

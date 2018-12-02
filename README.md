@@ -27,14 +27,16 @@ player
 
 ## API
 
-Constructor params: `uplayer(src, debug)`:
+Constructor params: `uplayer(src, debugState)`:
 
 - `src`: A URL to an audio file.
-- `debug`: Enables console log for debugging when true. False by default.
+- `debugState`: Enables console log for debugging when true. False by default.
+
+`src` can be a URL to be resolved by `fetch` or an `ArrayBuffer`.
 
 **µ-player** provides the following methods:
 
-- `load()`: Loads set audio source.
+- `load(src)`: Loads passed audio source or the one set on `constructor`.
 - `play(offset)`: Starts playback of loaded audio file at specified offset seconds.
 - `pause()`: Pauses playback.
 - `stop()`: Stops playback.
@@ -44,6 +46,7 @@ Constructor params: `uplayer(src, debug)`:
 - `loop(loopState)`: Enables / disables looping based on `loopState`.
 - `toggleLoop()`: Toggles looping.
 - `on(eventName, callback)`: Adds event listener on WebAudio source.
+- `debug(debugState)`: Enables / disables debug mode based on `debugState`.
 
 **µ-player** provides the following properties:
 
@@ -58,5 +61,32 @@ Constructor params: `uplayer(src, debug)`:
 Use the method `on(eventName, callback)` to set event listeners on the WebAudio source.
 
 For more info about events check [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+
+## Using with file reader
+
+Since `src` can be an `ArrayBuffer` you can easily drop audio files in the browser
+and play them with **µ-player**.
+
+Here's an example using the excellent [drag-drop](https://github.com/feross/drag-drop) module from [Feross](https://github.com/feross):
+
+```
+const dragDrop = require('drag-drop')
+
+dragDrop('body', function (files) {
+  const file = files[0]
+  console.log('GOT FILE:', file)
+
+  const reader = new window.FileReader()
+  reader.addEventListener('load', e => {
+    const data = e.target.result
+    const player = new Player(data, true)
+    player.load().play()
+  })
+  reader.addEventListener('error', err => {
+    console.error('FileReader error' + err)
+  })
+  reader.readAsArrayBuffer(file)
+})
+```
 
 Have fun!
