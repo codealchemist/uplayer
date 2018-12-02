@@ -8,6 +8,9 @@ module.exports = class Player {
     this.debug = debug
     this.startedAt = 0
     this.offset = 0
+    this.loopState = false
+    this.listeners = {}
+    this.playing = false
 
     this.initSource()
   }
@@ -15,6 +18,14 @@ module.exports = class Player {
   initSource () {
     this.source = this.context.createBufferSource()
     this.source.connect(this.context.destination)
+
+    // Add set event listeners to new source.
+    const events = Object.keys(this.listeners)
+    if (!events.length) return
+    events.map(eventName => {
+      this.log(`Re-add event: ${eventName}`)
+      this.source.addEventListener(eventName, this.listeners[eventName])
+    })
   }
 
   load () {
@@ -50,8 +61,11 @@ module.exports = class Player {
 
     this.source.buffer = this.buffer
     this.source.loopEnd = this.buffer.duration
+    this.source.loop = this.loopState
     this.startedAt = this.context.currentTime
     this.source.start(0, offset)
+    this.playing = true
+    this.source.addEventListener('ended', () => this.stop()) // So we can restart playback.
     this.log('Playing...')
   }
 
@@ -64,24 +78,30 @@ module.exports = class Player {
     if (!this.source) return
     this.source.disconnect()
     this.source.stop()
-    this.source = null
-
     this.initSource()
   }
 
   stop () {
+    if (!this.playing) return
     this.clearSource()
     this.startedAt = 0
     this.offset = 0
+    this.playing = false
     this.log('Stopped.')
   }
 
   loop (loopState) {
+    this.loopState = loopState
+    this.log('Loop:', loopState ? 'ON' : 'OFF')
     this.source.loop = loopState
+    return this
   }
 
   toggleLoop () {
-    this.source.loop = !this.source.loop
+    this.loopState = !this.loopState
+    this.log('Toggle loop:', this.loopState ? 'ON' : 'OFF')
+    this.source.loop = this.loopState
+    return this
   }
 
   forward (seconds = 5) {
@@ -109,7 +129,6 @@ module.exports = class Player {
     let $el = document.body
     if (selector) $el = document.querySelector(selector)
     $el.addEventListener('keydown', ({ key }) => {
-      console.log(key)
       const keyMap = {
         ArrowRight: () => this.forward(),
         ArrowLeft: () => this.rewind(),
@@ -127,6 +146,7 @@ module.exports = class Player {
 
   on (eventName, callback) {
     this.source.addEventListener(eventName, callback)
+    this.listeners[eventName] = callback
     return this
   }
 
