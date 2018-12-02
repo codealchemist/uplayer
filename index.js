@@ -167,6 +167,7 @@ module.exports = class Player {
 
   debug (debugState) {
     this.debugState = debugState
+    return this
   }
 
   log () {
