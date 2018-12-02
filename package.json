@@ -1,6 +1,6 @@
 {
   "name": "uplayer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "JavaScript micro audio player.",
   "main": "index.js",
   "scripts": {
