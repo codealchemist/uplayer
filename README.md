@@ -60,7 +60,20 @@ Constructor params: `uplayer(src, debugState)`:
 
 Use the method `on(eventName, callback)` to set event listeners on the WebAudio source.
 
+- `ended`: Fired when the whole file finished playing.
+  This is not fired if looping is enabled.
+
 For more info about events check [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+
+**µ-player** also offers the following internal events:
+
+- `load`: Fired when loading starts.
+- `loaded`: Fired when loading ends.
+- `play`: Fired when playback starts.
+- `stop`: Fired when playback stops.
+- `pause`: Fired when playback is paused.
+- `forward`: Fired when forwarding; passed seconds to callback.
+- `rewind`: Fired when forwarding; passed seconds to callback.
 
 ## Key bindings
 

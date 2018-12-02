@@ -10,7 +10,9 @@ module.exports = class Player {
     this.offset = 0
     this.loopState = false
     this.listeners = {}
+    this.ownListeners = {}
     this.playing = false
+    this.ownEvents = ['play', 'stop', 'pause', 'forward', 'rewind', 'load', 'loaded']
 
     this.initSource()
   }
@@ -42,11 +44,17 @@ module.exports = class Player {
     this.offset = 0
     this.playing = false
     this.log('Stopped.')
+    if (typeof this.ownListeners.stop === 'function') {
+      this.ownListeners.stop()
+    }
   }
 
   load (src) {
     src = src || this.src
     this.log('Loading', src)
+    if (typeof this.ownListeners.load === 'function') {
+      this.ownListeners.load(src)
+    }
     if (this.loaded) {
       this.clearSource()
       this.loaded = false
@@ -56,6 +64,9 @@ module.exports = class Player {
       this.fetcher = this.context.decodeAudioData(src).then(audioBuffer => {
         this.loaded = true
         this.buffer = audioBuffer
+        if (typeof this.ownListeners.loaded === 'function') {
+          this.ownListeners.loaded()
+        }
       })
       return this
     }
@@ -67,6 +78,9 @@ module.exports = class Player {
       .then(audioBuffer => {
         this.loaded = true
         this.buffer = audioBuffer
+        if (typeof this.ownListeners.loaded === 'function') {
+          this.ownListeners.loaded()
+        }
       })
     return this
   }
@@ -97,12 +111,18 @@ module.exports = class Player {
     this.playing = true
     this.source.addEventListener('ended', () => this.stop()) // So we can restart playback.
     this.log('Playing...')
+    if (typeof this.ownListeners.play === 'function') {
+      this.ownListeners.play()
+    }
   }
 
   pause () {
     this.context.suspend()
     this.playing = false
     this.log('Paused.')
+    if (typeof this.ownListeners.pause === 'function') {
+      this.ownListeners.pause()
+    }
   }
 
   loop (loopState) {
@@ -121,6 +141,9 @@ module.exports = class Player {
 
   forward (seconds = 5) {
     this.log(`>> Forward ${seconds} seconds`)
+    if (typeof this.ownListeners.forward === 'function') {
+      this.ownListeners.forward(seconds)
+    }
     const playTime = this.getPlayTime()
     this.offset = playTime + seconds
     if (this.offset > this.buffer.duration) this.offset = this.buffer.duration - seconds
@@ -131,6 +154,9 @@ module.exports = class Player {
 
   rewind (seconds = 5) {
     this.log(`<< Rewind ${seconds} seconds`)
+    if (typeof this.ownListeners.rewind === 'function') {
+      this.ownListeners.rewind(seconds)
+    }
     const playTime = this.getPlayTime()
     this.offset = playTime - seconds
     if (this.offset < 0) this.offset = 0
@@ -159,7 +185,16 @@ module.exports = class Player {
     return this
   }
 
+  isOwnEvent (eventName) {
+    return this.ownEvents.includes(eventName)
+  }
+
   on (eventName, callback) {
+    if (this.isOwnEvent(eventName)) {
+      this.ownListeners[eventName] = callback
+      return this
+    }
+
     this.source.addEventListener(eventName, callback)
     this.listeners[eventName] = callback
     return this
