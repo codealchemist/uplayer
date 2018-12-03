@@ -38,7 +38,6 @@ module.exports = class Player {
   }
 
   stop () {
-    if (!this.playing) return
     this.clearSource()
     this.startedAt = 0
     this.offset = 0
